@@ -41,21 +41,34 @@ function verificar() {
     let posicaoCerta = 0;
 
     for (let i = 0; i < qtdLetras; i++) {
-        let caixa = document.forms["termo" + rodada]["letra" + i].value.toUpperCase();
+        let caixa = document.forms["termo"+rodada]["letra" + i].value.toUpperCase();
 
         if (caixa == segredo[i]) {
             posicaoCerta++;
-            document.forms["termo" + rodada]["letra" + i].style.backgroundColor = "LightBlue";
-        } else if (segredo.includes(caixa)) {
-            document.forms["termo" + rodada]["letra" + i].style.backgroundColor = "yellow";
+            document.forms["termo"+rodada]["letra" + i].style.backgroundColor = "pink";
+        } else if(segredo.includes(caixa)) {
+            document.forms["termo"+rodada]["letra" + i].style.backgroundColor = "gray";
         } else {
-            document.forms["termo" + rodada]["letra" + i].style.backgroundColor = "gray";
-        }
-
+            document.forms["termo"+rodada]["letra" + i].style.backgroundColor = "purple";
+        }    
+        
         tentativa += caixa;
     }
 
     tentativas.push(tentativa);
+
+    let letras = "";
+
+    for(let i=0; i < tentativas.length ; i++) {
+        console.log(tentativas[i])
+        for (let j=0; j < tentativas[i].length; j++) {
+            if (!letras.includes(tentativas[i][j])){
+                console.log(tentativas[i][j])
+                letras += tentativas[i][j]
+            }
+        }
+        document.getElementById("letrasUtilizadas").innerText = letras;
+    }
 
     if (segredo == tentativa) {
         alert("Acertou")
@@ -68,7 +81,7 @@ function verificar() {
             alert("Fim de Jogo")
         }
     }
-
+        
 
     alert(tentativa);
 
@@ -87,7 +100,7 @@ function verificar() {
     //Passo 5.1.1
     // Verificar se ainda pode incrementar rodada ou se o jogo acabou
 
-    // Criar Formulário
+    //  Criar Formulário
 
     //Fim da repetição
 }
