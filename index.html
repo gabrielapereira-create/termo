@@ -1,16 +1,247 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#79c9f5">
+    <title>Termo — jogo das palavras</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: "Trebuchet MS", Arial, sans-serif;
+            color: #23465d;
+        }
 
+        * { box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            padding: 48px 20px 180px;
+            background: linear-gradient(180deg, #70c4f2 0%, #b8e7ff 58%, #e8f8ff 100%);
+        }
+
+        .sky-art {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .cloud {
+            position: absolute;
+            width: 140px;
+            height: 42px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .95);
+            filter: drop-shadow(0 5px 3px rgba(66, 142, 181, .12));
+            animation: float 8s ease-in-out infinite alternate;
+        }
+
+        .cloud::before,
+        .cloud::after {
+            content: "";
+            position: absolute;
+            bottom: 12px;
+            border-radius: 50%;
+            background: inherit;
+        }
+
+        .cloud::before { left: 23px; width: 55px; height: 55px; }
+        .cloud::after { right: 20px; width: 43px; height: 43px; }
+        .cloud-one { top: 13%; left: 9%; }
+        .cloud-two { top: 23%; right: 12%; transform: scale(.8); animation-delay: -3s; }
+        .cloud-three { top: 48%; left: -20px; transform: scale(.65); animation-delay: -5s; }
+
+        main {
+            position: relative;
+            z-index: 1;
+            width: min(100%, 560px);
+            margin: 0 auto;
+            padding: 32px clamp(20px, 6vw, 48px) 36px;
+            border: 2px solid rgba(255, 255, 255, .8);
+            border-radius: 28px;
+            background: rgba(255, 255, 255, .88);
+            box-shadow: 0 18px 45px rgba(39, 107, 143, .2);
+            text-align: center;
+            backdrop-filter: blur(7px);
+        }
+
+        .sun {
+            position: absolute;
+            top: -27px;
+            right: 35px;
+            width: 68px;
+            height: 68px;
+            border: 7px solid rgba(255, 255, 255, .55);
+            border-radius: 50%;
+            background: #ffd967;
+            box-shadow: 0 0 0 10px rgba(255, 217, 103, .18);
+        }
+
+        h1 {
+            margin: 0;
+            color: #1876a5;
+            font-size: clamp(2.2rem, 8vw, 3.3rem);
+            letter-spacing: .12em;
+            line-height: 1;
+        }
+
+        .subtitle {
+            margin: 12px 0 26px;
+            color: #66869a;
+            font-size: 1rem;
+        }
+
+        #jogo {
+            display: grid;
+            justify-items: center;
+            gap: 10px;
+        }
+
+        #jogo form {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            margin: 0;
+        }
+
+        #jogo input[type="text"] {
+            width: clamp(42px, 11vw, 54px);
+            height: clamp(48px, 12vw, 60px);
+            border: 2px solid #b8ddea;
+            border-radius: 12px;
+            background-color: #f7fcff;
+            color: #214e67;
+            font: 700 1.5rem "Trebuchet MS", Arial, sans-serif;
+            text-align: center;
+            text-transform: uppercase;
+            box-shadow: 0 3px 0 rgba(68, 139, 169, .12);
+            transition: transform .15s, border-color .15s, box-shadow .15s;
+        }
+
+        #jogo input[type="text"]:focus {
+            outline: 3px solid rgba(47, 159, 208, .22);
+            border-color: #39a5d2;
+            transform: translateY(-2px);
+        }
+
+        #jogo input[type="submit"] {
+            min-height: 48px;
+            margin-left: 4px;
+            padding: 0 18px;
+            border: 0;
+            border-radius: 12px;
+            background: #2698c4;
+            color: white;
+            font: 700 1rem "Trebuchet MS", Arial, sans-serif;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #18749a;
+            transition: transform .15s, background .15s;
+        }
+
+        #jogo input[type="submit"]:hover { background: #1686b3; transform: translateY(-1px); }
+        #jogo input[type="submit"]:active { transform: translateY(2px); box-shadow: 0 2px 0 #18749a; }
+
+        .used-letters {
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid #d6eaf2;
+        }
+
+        h2 {
+            margin: 0 0 10px;
+            color: #4a7890;
+            font-size: .95rem;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        #letrasUtilizadas {
+            min-height: 30px;
+            color: #2585ad;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: .2em;
+            overflow-wrap: anywhere;
+        }
+
+        .meadow {
+            position: fixed;
+            z-index: 2;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            height: 112px;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse at 12% 100%, #72bd65 0 40%, transparent 41%),
+                radial-gradient(ellipse at 45% 110%, #5eae58 0 45%, transparent 46%),
+                radial-gradient(ellipse at 82% 105%, #73c265 0 43%, transparent 44%),
+                linear-gradient(180deg, transparent 0 18%, #7cc96a 19%, #4fa857 100%);
+        }
+
+        .flowers {
+            position: absolute;
+            right: 0;
+            bottom: 49px;
+            left: 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            font-size: clamp(20px, 4vw, 32px);
+            filter: drop-shadow(0 2px 1px rgba(44, 104, 49, .2));
+        }
+
+        .flowers span:nth-child(even) { transform: translateY(12px) scale(.8); }
+        .flowers span:nth-child(3n) { transform: translateY(5px) scale(1.1); }
+
+        @keyframes float {
+            from { translate: -5px 0; }
+            to { translate: 10px 5px; }
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 54px 14px 150px; }
+            main { padding: 30px 16px; }
+            #jogo form { gap: 6px; }
+            #jogo input[type="submit"] { width: 100%; margin: 8px 0 0; }
+            .meadow { height: 90px; }
+            .flowers { bottom: 39px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
+    </style>
 </head>
-
 <body>
-    <div id="jogo">
-
+    <div class="sky-art" aria-hidden="true">
+        <span class="cloud cloud-one"></span>
+        <span class="cloud cloud-two"></span>
+        <span class="cloud cloud-three"></span>
     </div>
-    <h2>Letras Utilizadas</h2>
-    <div id="letrasUtilizadas"></div>
+
+    <main>
+        <span class="sun" aria-hidden="true"></span>
+        <header>
+            <h1>TERMO</h1>
+            <p class="subtitle">Descubra a palavra de cinco letras!</p>
+        </header>
+        <div id="jogo"></div>
+        <section class="used-letters" aria-live="polite">
+            <h2>Letras utilizadas</h2>
+            <div id="letrasUtilizadas"></div>
+        </section>
+    </main>
+
+    <div class="meadow" aria-hidden="true">
+        <div class="flowers"><span>🌼</span><span>🌷</span><span>🌸</span><span>🌻</span><span>🌼</span><span>🌷</span><span>🌸</span><span>🌻</span><span>🌼</span></div>
+    </div>
     <script src="termo.js"></script>
 </body>
-
 </html>
